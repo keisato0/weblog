@@ -90,8 +90,8 @@ main {
 .post-date {
   flex: none;
   color: var(--muted);
-  font-size: 0.85rem;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
   letter-spacing: 0.02em;
 }
 
