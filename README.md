@@ -12,17 +12,9 @@ Obsidian の vault がそのままブログのソースになっている。
 
 ## 公開する
 
-**「ウェブログを公開」アプリ**（`~/Applications/ウェブログを公開.app`）を起動するだけ。
+Finder で **`ウェブログを公開.command`** をダブルクリックするだけ。
 変更をコミットして push し、GitHub Actions が `build.py` を実行して GitHub Pages に反映する。
-反映が終わるとデスクトップに通知が出る。
-
-ターミナルからでも同じことができる:
-
-```
-./publish.sh
-```
-
-アプリを作り直すときは `./tools/make-app.sh`。
+ターミナルの画面に進捗が出て、反映が終わるとデスクトップにも通知が出る。
 
 ## 手元で確認する
 
@@ -41,5 +33,4 @@ python3 -m http.server --directory _site 8000
 | `build.py` | `原稿/*.md` → `_site/` のHTMLを生成 |
 | `assets/style.css` | サイトの見た目 |
 | `.github/workflows/deploy.yml` | push 時の自動公開 |
-| `publish.sh` | 変更をコミットして push する |
-| `tools/` | 「ウェブログを公開」アプリの元ファイルと作成スクリプト |
+| `ウェブログを公開.command` | ダブルクリックで公開する |
