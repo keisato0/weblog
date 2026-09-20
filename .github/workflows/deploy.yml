@@ -27,6 +27,8 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python build.py
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true   # Pages が無効なら自動で有効にする（初回や設定が外れたとき用）
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
