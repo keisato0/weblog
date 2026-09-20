@@ -26,7 +26,7 @@ SRC_DIR = ROOT / "原稿"
 OUT_DIR = ROOT / "_site"
 ASSETS_DIR = ROOT / "assets"
 JST = timezone(timedelta(hours=9))
-DATE_FORMAT = "%Y年%m月%d日"
+DATE_FORMAT = "%Y年%-m月%-d日"
 
 
 def split_frontmatter(text):
