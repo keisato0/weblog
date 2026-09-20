@@ -1,0 +1,6 @@
+_site/
+.venv/
+.claude/
+.DS_Store
+.obsidian/workspace.json
+.obsidian/themes/

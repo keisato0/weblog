@@ -1,0 +1,167 @@
+/* ウェブログ */
+
+:root {
+  --bg: #fdfdfb;
+  --fg: #23201c;
+  --muted: #8a8378;
+  --rule: #e2ded6;
+  --link: #166b33;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171614;
+    --fg: #e6e2da;
+    --muted: #918a7e;
+    --rule: #33302b;
+    --link: #6cc48c;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 1rem 6rem;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 17px;
+  line-height: 1.9;
+  -webkit-text-size-adjust: 100%;
+}
+
+main, .site-header { max-width: 42rem; margin: 0 auto; }
+
+/* ヘッダー（ブログタイトル） */
+
+.site-header {
+  padding: 3rem 0 1.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.site-title {
+  font-size: 1.35rem;
+  font-weight: normal;
+  letter-spacing: 0.15em;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.site-title:hover { color: var(--link); }
+
+/* ホームの記事一覧（タイトルと更新日時の2列） */
+
+.post-list {
+  list-style: none;
+  margin: 2rem 0 0;
+  padding: 0;
+}
+
+.post-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.post-link {
+  flex: 1;
+  color: var(--link);
+  text-decoration: none;
+}
+
+.post-link:hover { text-decoration: underline; }
+
+.post-date {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.02em;
+}
+
+/* 記事ページ */
+
+.post { margin-top: 2.5rem; }
+
+.post-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: normal;
+  line-height: 1.6;
+}
+
+.post > .post-date {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.post-body { margin-top: 2.5rem; }
+
+.post-body h2 {
+  margin: 3rem 0 1rem;
+  font-size: 1.15rem;
+  font-weight: normal;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.post-body h3 {
+  margin: 2.25rem 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: normal;
+}
+
+.post-body p { margin: 1.5rem 0; }
+
+.post-body ul, .post-body ol { padding-left: 1.5rem; }
+
+.post-body li { margin: 0.5rem 0; }
+
+.post-body a { color: var(--link); }
+
+.post-body blockquote {
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--rule);
+  color: var(--muted);
+}
+
+.post-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: var(--rule);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+
+.post-body pre {
+  padding: 1rem;
+  overflow-x: auto;
+  background: var(--rule);
+  border-radius: 4px;
+  line-height: 1.6;
+}
+
+.post-body pre code { background: none; padding: 0; }
+
+.post-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.post-body :is(th, td) {
+  border: 1px solid var(--rule);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+
+.post-body img { max-width: 100%; height: auto; }
+
+@media (max-width: 480px) {
+  body { font-size: 16px; }
+  .site-header { padding-top: 2rem; }
+}

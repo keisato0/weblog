@@ -1,0 +1,43 @@
+/* ============================================================
+   表を横いっぱいに表示する Obsidian CSS スニペット
+   ------------------------------------------------------------
+   対象: プロパティ cssclasses に wide-table を指定したノートだけ
+   （例: 文献/もともと論文フォルダ/文献レビュー.md）
+   ほかのノートの表示幅は spacing.css の設定のまま変わらない
+   ============================================================ */
+
+/* ノートの表示幅の上限を外す（spacing.css の幅指定より優先させる） */
+.wide-table div:is(.cm-sizer, .markdown-preview-sizer) {
+  --file-line-width: 4000px;
+}
+
+/* 列の最大幅（spacing.css では 40ch）の制限を外す */
+.markdown-source-view.wide-table,
+.markdown-preview-view.wide-table {
+  --table-column-max-width: none;
+}
+
+/* 表をノートの幅いっぱいに広げ、列幅の配分を決める
+   表を包んでいる要素（編集モードでは .cm-table-widget、
+   閲覧モードでは table の親の div）も幅いっぱいにしないと、
+   表ごとに内容の長さに応じて幅が変わってしまう */
+.wide-table .cm-embed-block.cm-table-widget,
+.wide-table .cm-table-widget div:has(> table),
+.wide-table.markdown-preview-view div:has(> table) {
+  width: 100% !important;
+}
+.wide-table table {
+  width: 100% !important;
+  table-layout: fixed;   /* 内容の長さに関係なく、下の列幅の指定どおりに揃える */
+}
+.wide-table :is(th, td):nth-child(1) {
+  width: 6em;   /* 通し番号 */
+}
+.wide-table :is(th, td):nth-child(3) {
+  width: 40%;   /* メモ（書き込み用に広めにとる） */
+}
+
+/* 冒頭のプロパティ（Properties）欄をこのノートだけ非表示にする */
+.wide-table .metadata-container {
+  display: none !important;
+}

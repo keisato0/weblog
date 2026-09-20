@@ -1,0 +1,9 @@
+{
+  "enabledCssSnippets": [
+    "wide-table",
+    "spacing"
+  ],
+  "textFontFamily": "Hiragino Mincho ProN",
+  "cssTheme": "AnuPpuccin",
+  "accentColor": "#188b3b"
+}
