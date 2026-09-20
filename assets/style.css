@@ -91,7 +91,7 @@ main {
   flex: none;
   color: var(--muted);
   font-size: 0.85rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   letter-spacing: 0.02em;
 }
 

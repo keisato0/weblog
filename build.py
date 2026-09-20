@@ -26,6 +26,7 @@ SRC_DIR = ROOT / "原稿"
 OUT_DIR = ROOT / "_site"
 ASSETS_DIR = ROOT / "assets"
 JST = timezone(timedelta(hours=9))
+DATE_FORMAT = "%Y年%m月%d日"
 
 
 def split_frontmatter(text):
@@ -122,7 +123,7 @@ def build():
     rows = []
     for post in posts:
         href = "posts/" + urllib.parse.quote(post["title"]) + "/"
-        date = post["updated"].strftime("%Y-%m-%d")
+        date = post["updated"].strftime(DATE_FORMAT)
         rows.append(
             f'  <li class="post-row">\n'
             f'    <a class="post-link" href="{href}">{html.escape(post["title"])}</a>\n'
@@ -133,7 +134,7 @@ def build():
     (OUT_DIR / "index.html").write_text(page(BLOG_TITLE, index_body, 0), encoding="utf-8")
 
     for post in posts:
-        date = post["updated"].strftime("%Y-%m-%d")
+        date = post["updated"].strftime(DATE_FORMAT)
         body = (
             f'<article class="post">\n'
             f'  <h1 class="post-title">{html.escape(post["title"])}</h1>\n'
