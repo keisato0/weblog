@@ -6,6 +6,8 @@
   --muted: #8a8378;
   --rule: #e2ded6;
   --link: #166b33;
+  --band: #166b33;        /* 上部の帯 */
+  --band-fg: #ffffff;     /* 帯の上の文字（白抜き） */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,6 +17,8 @@
     --muted: #918a7e;
     --rule: #33302b;
     --link: #6cc48c;
+    --band: #14532a;
+    --band-fg: #ffffff;
   }
 }
 
@@ -22,7 +26,7 @@
 
 body {
   margin: 0;
-  padding: 0 1rem 6rem;
+  padding: 0 0 6rem;
   background: var(--bg);
   color: var(--fg);
   font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
@@ -31,24 +35,32 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
-main, .site-header { max-width: 42rem; margin: 0 auto; }
+main {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
 
-/* ヘッダー（ブログタイトル） */
+/* ヘッダー（ブログタイトル）: 上部を緑で塗りつぶし、タイトルは白抜き */
 
 .site-header {
-  padding: 3rem 0 1.25rem;
-  border-bottom: 1px solid var(--rule);
+  background: var(--band);
+  padding: 2.5rem 1rem;
 }
 
 .site-title {
-  font-size: 1.35rem;
+  display: block;
+  max-width: 42rem;
+  margin: 0 auto;
+  font-size: 2.1rem;          /* 記事タイトル(1.5rem)より大きくする */
   font-weight: normal;
-  letter-spacing: 0.15em;
-  color: var(--fg);
+  letter-spacing: 0.18em;
+  line-height: 1.4;
+  color: var(--band-fg);
   text-decoration: none;
 }
 
-.site-title:hover { color: var(--link); }
+.site-title:hover { opacity: 0.82; }
 
 /* ホームの記事一覧（タイトルと更新日時の2列） */
 
@@ -68,11 +80,12 @@ main, .site-header { max-width: 42rem; margin: 0 auto; }
 
 .post-link {
   flex: 1;
-  color: var(--link);
+  color: var(--fg);
   text-decoration: none;
+  transition: color 0.15s;
 }
 
-.post-link:hover { text-decoration: underline; }
+.post-link:hover { color: var(--link); }
 
 .post-date {
   flex: none;
@@ -163,5 +176,6 @@ main, .site-header { max-width: 42rem; margin: 0 auto; }
 
 @media (max-width: 480px) {
   body { font-size: 16px; }
-  .site-header { padding-top: 2rem; }
+  .site-header { padding: 1.75rem 1rem; }
+  .site-title { font-size: 1.7rem; }
 }
