@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parent
 SRC_DIR = ROOT / "原稿"
 OUT_DIR = ROOT / "_site"
 ASSETS_DIR = ROOT / "assets"
+PRIVATE_DIR_NAME = "非公開"
 JST = timezone(timedelta(hours=9))
 DATE_FORMAT = "%Y年%-m月%-d日"
 
@@ -103,6 +104,8 @@ def build():
 
     posts = []
     for path in sorted(SRC_DIR.rglob("*.md")):
+        if PRIVATE_DIR_NAME in path.relative_to(SRC_DIR).parts[:-1]:
+            continue
         text = path.read_text(encoding="utf-8")
         meta, body_md = split_frontmatter(text)
         title = meta.get("title") or path.stem
