@@ -19,6 +19,9 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import markdown
+import xml.etree.ElementTree as etree
+from markdown.extensions import Extension
+from markdown.treeprocessors import Treeprocessor
 
 BLOG_TITLE = "ウェブログ"
 ROOT = Path(__file__).resolve().parent
@@ -48,6 +51,39 @@ def split_frontmatter(text):
             key, _, value = line.partition(":")
             meta[key.strip()] = value.strip().strip("\"'")
     return meta, "\n".join(lines[end + 1:]).lstrip("\n")
+
+
+class LinePerParagraph(Treeprocessor):
+    """段落内の改行（<br>）で <p> を分け、1行ずつ別の段落にする。
+
+    原稿は1行の改行で段落を区切っているので、段落間の余白を CSS で付けられるようにする。
+    """
+
+    def run(self, root):
+        for parent in list(root.iter()):
+            for i in reversed(range(len(parent))):
+                p = parent[i]
+                if p.tag != "p" or p.find("br") is None:
+                    continue
+                paragraphs = [etree.Element("p")]
+                paragraphs[0].text = p.text
+                for child in list(p):
+                    if child.tag == "br":
+                        q = etree.Element("p")
+                        q.text = (child.tail or "").lstrip("\n")
+                        paragraphs.append(q)
+                    else:
+                        paragraphs[-1].append(child)
+                parent.remove(p)
+                for q in reversed(paragraphs):
+                    if (q.text or "").strip() or len(q):
+                        parent.insert(i, q)
+
+
+class LinePerParagraphExtension(Extension):
+    def extendMarkdown(self, md):
+        # インライン処理（nl2br による <br> の生成）の後に実行する
+        md.treeprocessors.register(LinePerParagraph(md), "line_per_paragraph", 15)
 
 
 def git_updated_at(path):
@@ -112,8 +148,11 @@ def build():
         posts.append({
             "title": title,
             "updated": updated_at(path, meta),
-            # Obsidian と同じく、1行の改行をそのまま改行として表示する
-            "body": markdown.markdown(body_md, extensions=["extra", "sane_lists", "nl2br"]),
+            # Obsidian と同じく1行の改行で行を分け、各行を1つの段落として出力する
+            "body": markdown.markdown(
+                body_md,
+                extensions=["extra", "sane_lists", "nl2br", LinePerParagraphExtension()],
+            ),
         })
 
     posts.sort(key=lambda p: p["updated"], reverse=True)
