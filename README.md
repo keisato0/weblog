@@ -12,7 +12,7 @@ Obsidian の vault がそのままブログのソースになっている。
 
 ## 公開する
 
-Finder で **`ウェブログを公開.command`** をダブルクリックするだけ。
+Finder で **`ウェブログを公開・編集.command`** をダブルクリックするだけ。
 変更をコミットして push し、GitHub Actions が `build.py` を実行して GitHub Pages に反映する。
 ターミナルの画面に進捗が出て、反映が終わるとデスクトップにも通知が出る。
 
@@ -54,7 +54,7 @@ python3 -m http.server --directory _site 8000
 | `build.py` | `原稿/*.md` → `_site/` のHTMLを生成 |
 | `assets/style.css` | サイトの見た目 |
 | `.github/workflows/deploy.yml` | push 時の自動公開 |
-| `ウェブログを公開.command` | ダブルクリックで公開する |
+| `ウェブログを公開・編集.command` | ダブルクリックで公開する |
 | `.obsidian/plugins/weblog-photos/` | Obsidian の写真ボタン |
 | `写真を取り込む.command` | ダブルクリックで Google フォトの写真を取り込む |
 | `import_photos.py` | 写真の取り込みの本体 |

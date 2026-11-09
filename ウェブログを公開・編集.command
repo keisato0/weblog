@@ -3,7 +3,7 @@
 #
 # Finder でこのファイルをダブルクリックすると、ターミナルが開いて実行される。
 # 原稿の変更をコミットして push し、GitHub Pages への反映まで見届ける。
-# ターミナルから ./ウェブログを公開.command と打っても同じ。
+# ターミナルから ./ウェブログを公開・編集.command と打っても同じ。
 
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin:/opt/homebrew/bin"
 GIT=/usr/bin/git

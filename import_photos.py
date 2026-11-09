@@ -9,7 +9,7 @@
 進捗とエラーは標準エラー出力に書く。
 
 認証情報はリポジトリの外（~/.config/weblog-google-photos/）に置く。
-「ウェブログを公開.command」は git add -A するので、リポジトリ内に置くと公開されてしまう。
+「ウェブログを公開・編集.command」は git add -A するので、リポジトリ内に置くと公開されてしまう。
 """
 
 import base64
