@@ -139,6 +139,8 @@ def page(title, body, depth):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
+<link rel="icon" href="{up}assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="{up}assets/favicon.png" type="image/png" sizes="64x64">
 <link rel="stylesheet" href="{up}assets/style.css">
 </head>
 <body>
