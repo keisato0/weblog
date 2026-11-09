@@ -45,3 +45,22 @@
   --table-column-min-width: 8ch;   /* 列の最小幅（8文字分） */
   --table-column-max-width: 40ch;  /* 列の最大幅（40文字分。広がりすぎる列を抑える） */
 }
+
+/* ------------------------------------------------------------
+   画像の中央揃え（公開サイトの見た目に合わせる）
+   ------------------------------------------------------------ */
+.markdown-source-view.mod-cm6 .image-embed,
+.markdown-rendered .image-embed {
+  display: block;
+  width: fit-content;   /* Obsidian 本体の指定と同じ。これがあるので中身ではなく枠を寄せる */
+  margin: 1.2em auto;   /* 本文の行間も含めた見た目で段落間より少し広く、上下同じ値に */
+}
+/* inline-flex のままだと、行の高さの分だけ画像の下に隙間ができる */
+.markdown-source-view.mod-cm6 .image-embed .image-wrapper {
+  display: flex;
+}
+.markdown-source-view.mod-cm6 .cm-content img,
+.markdown-rendered img {
+  display: block;
+  margin-inline: auto;
+}

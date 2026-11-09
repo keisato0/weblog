@@ -172,7 +172,12 @@ main {
   text-align: left;
 }
 
-.post-body img { max-width: 100%; height: auto; }
+.post-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.65em auto;   /* 本文の行間も含めた見た目で、段落間 + 0.5em を上下同じ値に */
+}
 
 @media (max-width: 480px) {
   body { font-size: 16px; }
