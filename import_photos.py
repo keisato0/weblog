@@ -3,6 +3,7 @@
 
 ブラウザで写真を選ぶと assets/images/ に保存し、原稿に貼り付ける Markdown を
 クリップボードに入れる。使うのは Google Photos Picker API で、標準ライブラリのみで動く。
+公開される画像なので、保存前に撮影日時や位置情報などのメタデータを取り除く。
 
 --stdout を付けると、Markdown だけを標準出力に書く（Obsidian プラグイン用）。
 進捗とエラーは標準エラー出力に書く。
@@ -18,6 +19,7 @@ import json
 import os
 import secrets
 import shutil
+import struct
 import subprocess
 import sys
 import time
@@ -25,7 +27,6 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import webbrowser
-from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
@@ -41,18 +42,19 @@ TOKEN_URL = "https://oauth2.googleapis.com/token"
 API_BASE = "https://photospicker.googleapis.com/v1"
 SCOPE = "https://www.googleapis.com/auth/photospicker.mediaitems.readonly"
 
-MAX_IMAGE_SIZE = 2048  # 保存する画像の長辺の上限（ピクセル）
+MAX_IMAGE_SIZE = 350  # 保存する画像の長辺の上限（ピクセル）
 REQUEST_TIMEOUT = 60  # 秒
 AUTH_TIMEOUT = 300  # 秒
 DEFAULT_POLL_INTERVAL = 5.0  # 秒
 DEFAULT_PICK_TIMEOUT = 1800.0  # 秒
 TOKEN_MARGIN = 300  # アクセストークンの期限が残りこの秒数を切ったら更新する
-JST = timezone(timedelta(hours=9))
-EXTENSIONS = {
+EXTENSIONS = {  # メタデータを確実に取り除ける形式だけを受け付ける
     "image/jpeg": ".jpg",
     "image/png": ".png",
-    "image/gif": ".gif",
-    "image/webp": ".webp",
+}
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+PNG_KEPT_CHUNKS = {
+    b"IHDR", b"PLTE", b"IDAT", b"IEND", b"tRNS", b"gAMA", b"cHRM", b"sRGB", b"iCCP", b"sBIT",
 }
 
 SETUP_MESSAGE = f"""Google の OAuth クライアントのファイルが見つかりません。
@@ -303,13 +305,114 @@ def list_picked_items(auth, session_id):
 
 
 def image_stem(item):
-    """撮影日時と ID から、同じ写真なら毎回同じになるファイル名を作る。"""
-    suffix = hashlib.sha1(item["id"].encode()).hexdigest()[:6]
+    """同じ写真なら毎回同じになるファイル名を作る。撮影日時が公開されないよう ID のみから作る。"""
+    return "photo-" + hashlib.sha1(item["id"].encode()).hexdigest()[:12]
+
+
+def exif_orientation(payload):
+    """JPEG の Exif セグメントから写真の向き（1〜8）を読む。読めなければ None。"""
+    tiff = payload[6:]
+    order = {b"II": "<", b"MM": ">"}.get(tiff[:2])
+    if order is None:
+        return None
     try:
-        created = datetime.strptime(item.get("createTime", "")[:19], "%Y-%m-%dT%H:%M:%S")
-    except ValueError:
-        return f"photo-{suffix}"
-    return f"{created.replace(tzinfo=timezone.utc).astimezone(JST):%Y%m%d-%H%M%S}-{suffix}"
+        offset = struct.unpack_from(order + "I", tiff, 4)[0]
+        count = struct.unpack_from(order + "H", tiff, offset)[0]
+        for index in range(count):
+            tag, kind, _, value = struct.unpack_from(order + "HHIH", tiff, offset + 2 + index * 12)
+            if tag == 0x0112 and kind == 3 and 1 <= value <= 8:
+                return value
+    except struct.error:
+        return None
+    return None
+
+
+def orientation_segment(orientation):
+    """向きの情報だけを持つ Exif セグメントを作る。"""
+    exif = b"Exif\0\0MM\0*" + struct.pack(">IHHHIHHI", 8, 1, 0x0112, 3, 1, orientation, 0, 0)
+    return b"\xff\xe1" + struct.pack(">H", len(exif) + 2) + exif
+
+
+def keep_jpeg_segment(marker, payload):
+    """画像の表示に必要なセグメントだけを残す。"""
+    if marker == 0xE0:  # サムネイルのない JFIF のみ
+        return payload.startswith(b"JFIF\0") and payload[12:14] == b"\0\0"
+    if marker == 0xE2:  # 色の再現に使う ICC プロファイルのみ
+        return payload.startswith(b"ICC_PROFILE\0")
+    if marker == 0xEE:  # 色変換の指定
+        return payload.startswith(b"Adobe")
+    return not (0xE0 <= marker <= 0xEF or marker == 0xFE)
+
+
+def jpeg_scan_end(data, position):
+    """圧縮データの次のマーカーの位置を返す。"""
+    while True:
+        position = data.index(b"\xff", position)
+        following = data[position + 1]
+        if following == 0xFF:
+            position += 1
+        elif following == 0 or 0xD0 <= following <= 0xD7:
+            position += 2
+        else:
+            return position
+
+
+def strip_jpeg(data):
+    if data[:2] != b"\xff\xd8":
+        raise ValueError("JPEG の先頭ではありません")
+    segments = []
+    orientation = None
+    position = 2
+    while True:
+        if data[position] != 0xFF:
+            raise ValueError("マーカーがありません")
+        while data[position + 1] == 0xFF:
+            position += 1
+        marker = data[position + 1]
+        if marker == 0xD9:  # これより後ろ（動画つき写真の動画など）は捨てる
+            segments.append(b"\xff\xd9")
+            break
+        end = position + 2 + struct.unpack_from(">H", data, position + 2)[0]
+        if end > len(data):
+            raise ValueError("データが途中で切れています")
+        payload = data[position + 4:end]
+        if orientation is None and marker == 0xE1 and payload.startswith(b"Exif\0\0"):
+            orientation = exif_orientation(payload)
+        if keep_jpeg_segment(marker, payload):
+            segments.append(data[position:end])
+        position = end
+        if marker == 0xDA:
+            position = jpeg_scan_end(data, end)
+            segments.append(data[end:position])
+    if orientation not in (None, 1):
+        segments.insert(1 if segments[0][:2] == b"\xff\xe0" else 0, orientation_segment(orientation))
+    return b"\xff\xd8" + b"".join(segments)
+
+
+def strip_png(data):
+    if data[:8] != PNG_SIGNATURE:
+        raise ValueError("PNG の先頭ではありません")
+    chunks = [PNG_SIGNATURE]
+    position = 8
+    while True:
+        end = position + 12 + struct.unpack_from(">I", data, position)[0]
+        if end > len(data):
+            raise ValueError("データが途中で切れています")
+        kind = data[position + 4:position + 8]
+        if kind in PNG_KEPT_CHUNKS:
+            chunks.append(data[position:end])
+        if kind == b"IEND":
+            return b"".join(chunks)
+        position = end
+
+
+def strip_metadata(body, content_type):
+    """メタデータを取り除く。取り除けない画像は公開しないよう、保存せずエラーにする。"""
+    strip = strip_jpeg if content_type == "image/jpeg" else strip_png
+    try:
+        return strip(body)
+    except (IndexError, ValueError, struct.error) as error:
+        raise PhotoImportError("メタデータを削除できなかったため、保存しませんでした。") from error
 
 
 def download_image(auth, item):
@@ -318,7 +421,8 @@ def download_image(auth, item):
     body, content_type = http_request(url, token=auth.access_token())
     extension = EXTENSIONS.get(content_type)
     if extension is None:
-        raise PhotoImportError(f"ブラウザで表示できない形式です: {content_type}")
+        raise PhotoImportError(f"対応していない形式です: {content_type}")
+    body = strip_metadata(body, content_type)
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     path = IMAGES_DIR / (image_stem(item) + extension)
     path.write_bytes(body)
