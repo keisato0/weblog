@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # 更新日時にコミット履歴を使うため全履歴を取得する
+          fetch-depth: 0   # 記事の日付に最初のコミットを使うため全履歴を取得する
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
