@@ -16,6 +16,27 @@ Finder で **`ウェブログを公開.command`** をダブルクリックする
 変更をコミットして push し、GitHub Actions が `build.py` を実行して GitHub Pages に反映する。
 ターミナルの画面に進捗が出て、反映が終わるとデスクトップにも通知が出る。
 
+## Google フォトの写真を使う
+
+Obsidian で原稿を編集中に、左端のリボンの **写真ボタン**（またはコマンドパレットの「Google フォトから写真を挿入」）を押し、ブラウザで写真を選んで「完了」を押す。
+写真が `assets/images/` に保存され（長辺 2048px まで）、カーソル位置に `![](assets/images/...)` が挿入される。写真を選ぶ前にもう一度ボタンを押すと中止する。
+
+Finder で **`写真を取り込む.command`** をダブルクリックしても取り込める。この場合は挿入する文字列がクリップボードに入るので、原稿に `Cmd+V` で貼り付ける。
+
+`assets/images/` の写真は、原稿で使っていなくても公開するとサイトに載る。
+
+### 初回設定
+
+1. [Google Cloud Console](https://console.cloud.google.com/) でプロジェクトを作る。
+2. 「Google Photos Picker API」を有効にする。
+3. Google Auth Platform で対象を「外部」にして、自分の Google アカウントをテストユーザーに追加する。
+4. 種類を「デスクトップ アプリ」にして OAuth クライアントを作り、JSON をダウンロードする。
+5. `写真を取り込む.command` を実行して、ブラウザで認可する。
+6. Obsidian の「設定 → コミュニティプラグイン」で制限モードをオフにし、「Weblog Photos」を有効にする。
+
+`~/Downloads` の `client_secret_*.json` は `~/.config/weblog-google-photos/` に自動で移動する。公開時にコミットされないよう、認証情報はリポジトリの外に置いている。
+公開ステータスが「テスト」のままだと認可は7日で切れ、切れた後の実行時にブラウザの認可画面がもう一度開く。
+
 ## 手元で確認する
 
 ```
@@ -34,3 +55,7 @@ python3 -m http.server --directory _site 8000
 | `assets/style.css` | サイトの見た目 |
 | `.github/workflows/deploy.yml` | push 時の自動公開 |
 | `ウェブログを公開.command` | ダブルクリックで公開する |
+| `.obsidian/plugins/weblog-photos/` | Obsidian の写真ボタン |
+| `写真を取り込む.command` | ダブルクリックで Google フォトの写真を取り込む |
+| `import_photos.py` | 写真の取り込みの本体 |
+| `assets/images/` | 取り込んだ写真 |

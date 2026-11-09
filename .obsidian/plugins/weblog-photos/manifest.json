@@ -1,0 +1,9 @@
+{
+  "id": "weblog-photos",
+  "name": "Weblog Photos",
+  "version": "1.0.0",
+  "minAppVersion": "1.5.0",
+  "description": "Google フォトで選んだ写真を取り込み、編集中の原稿に挿入する。",
+  "author": "keisato0",
+  "isDesktopOnly": true
+}

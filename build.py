@@ -86,6 +86,25 @@ class LinePerParagraphExtension(Extension):
         md.treeprocessors.register(LinePerParagraph(md), "line_per_paragraph", 15)
 
 
+class SiteRelativeImages(Treeprocessor):
+    """vault のルートからの画像パス（assets/...）を、記事ページからの相対パスに直す。
+
+    記事のURLは常に /posts/<タイトル>/ なので、assets へは2階層上がる。
+    """
+
+    def run(self, root):
+        for image in root.iter("img"):
+            src = image.get("src", "")
+            if src.startswith("assets/"):
+                image.set("src", "../../" + src)
+
+
+class SiteRelativeImagesExtension(Extension):
+    def extendMarkdown(self, md):
+        # インライン処理（<img> の生成）の後に実行する
+        md.treeprocessors.register(SiteRelativeImages(md), "site_relative_images", 15)
+
+
 def git_updated_at(path):
     """そのファイルの最終コミット日時。git 管理外・未コミットなら None。"""
     try:
@@ -151,7 +170,10 @@ def build():
             # Obsidian と同じく1行の改行で行を分け、各行を1つの段落として出力する
             "body": markdown.markdown(
                 body_md,
-                extensions=["extra", "sane_lists", "nl2br", LinePerParagraphExtension()],
+                extensions=[
+                    "extra", "sane_lists", "nl2br",
+                    LinePerParagraphExtension(), SiteRelativeImagesExtension(),
+                ],
             ),
         })
 
