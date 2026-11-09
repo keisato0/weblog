@@ -52,6 +52,15 @@ EXTENSIONS = {  # メタデータを確実に取り除ける形式だけを受�
     "image/jpeg": ".jpg",
     "image/png": ".png",
 }
+CLOSE_TAB_SCRIPT = (
+    'if application "Brave Browser" is running then',
+    'tell application "Brave Browser"',
+    "repeat with browserWindow in windows",
+    'close (every tab of browserWindow whose URL contains "photos.google.com/integration/picker/")',
+    "end repeat",
+    "end tell",
+    "end if",
+)
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 PNG_KEPT_CHUNKS = {
     b"IHDR", b"PLTE", b"IDAT", b"IEND", b"tRNS", b"gAMA", b"cHRM", b"sRGB", b"iCCP", b"sBIT",
@@ -293,6 +302,22 @@ def wait_for_selection(auth, session):
     print()
 
 
+def close_picker_tabs():
+    """写真を選び終えた Brave の選択画面のタブを閉じる。
+
+    外部から開いたタブはブラウザの制限で /autoclose では閉じられないため、AppleScript で閉じる。
+    開いた後に URL が転送されて pickerUri とは一致しないので、選択画面の URL 全体で判定する。
+    閉じられなくても取り込みは続ける。macOS の許可の確認で止まらないよう、終了は待たない。
+    """
+    command = ["/usr/bin/osascript"]
+    for line in CLOSE_TAB_SCRIPT:
+        command += ["-e", line]
+    try:
+        subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError:
+        pass
+
+
 def list_picked_items(auth, session_id):
     items = []
     params = {"sessionId": session_id, "pageSize": 100}
@@ -446,6 +471,7 @@ def import_photos():
     try:
         webbrowser.open(session["pickerUri"].rstrip("/") + "/autoclose")
         wait_for_selection(auth, session)
+        close_picker_tabs()
         for item in list_picked_items(auth, session["id"]):
             filename = item.get("mediaFile", {}).get("filename", item.get("id", "不明"))
             if item.get("type") == "VIDEO":
